@@ -15,9 +15,9 @@ public enum PetSize: String, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .small: return "작게"
-        case .medium: return "보통"
-        case .large: return "크게"
+        case .small: return L10n.t("작게", "Small")
+        case .medium: return L10n.t("보통", "Medium")
+        case .large: return L10n.t("크게", "Large")
         }
     }
 

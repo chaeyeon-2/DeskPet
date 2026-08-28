@@ -1,15 +1,16 @@
-## 무엇을 바꿨나요?
+## What does this change?
 
-<!-- 한두 줄로 설명해 주세요 -->
+<!-- A line or two is plenty -->
 
-## 확인한 것
+## Checklist
 
-- [ ] `swift build` 가 경고 없이 통과합니다
-- [ ] `swift run DeskPetTests` 가 전부 통과합니다
-- [ ] `./.build/debug/DeskPet --selftest ./selftest` 가 전부 통과합니다
-- [ ] (그림을 바꿨다면) 스크린샷을 첨부했습니다
-- [ ] 키 입력 내용을 읽거나 네트워크 요청을 추가하지 **않았습니다**
+- [ ] `swift build` passes with no warnings
+- [ ] `swift run DeskPetTests` all pass
+- [ ] `./.build/debug/DeskPet --selftest ./selftest` all pass
+- [ ] Screenshots attached (if the artwork changed)
+- [ ] Speech lines have **both** `ko` and `en` (if lines were added)
+- [ ] Does **not** read key content and does **not** add network requests
 
-## 스크린샷
+## Screenshots
 
-<!-- 그림/애니메이션을 바꿨다면 selftest 가 만든 PNG 나 스프라이트 시트를 붙여 주세요 -->
+<!-- PNGs from selftest, or a sprite sheet -->

@@ -1,5 +1,6 @@
 import Foundation
 import ServiceManagement
+import DeskPetCore
 
 /// 로그인 시 자동 실행 (macOS 13+ SMAppService).
 enum LaunchAtLogin {
@@ -17,7 +18,8 @@ enum LaunchAtLogin {
     @discardableResult
     static func setEnabled(_ enabled: Bool) -> String? {
         guard isSupported else {
-            return "자동 실행은 DeskPet.app 으로 실행했을 때만 설정할 수 있어요."
+            return L10n.t("자동 실행은 DeskPet.app 으로 실행했을 때만 설정할 수 있어요.",
+                          "Launch at login only works when running DeskPet.app.")
         }
         do {
             if enabled {
@@ -27,7 +29,8 @@ enum LaunchAtLogin {
             }
             return nil
         } catch {
-            return "자동 실행 설정을 바꾸지 못했어요: \(error.localizedDescription)"
+            return L10n.t("자동 실행 설정을 바꾸지 못했어요: ", "Could not change the launch-at-login setting: ")
+                + error.localizedDescription
         }
     }
 }

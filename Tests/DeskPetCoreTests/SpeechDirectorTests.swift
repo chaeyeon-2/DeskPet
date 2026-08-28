@@ -16,6 +16,10 @@ private final class FakeRandom {
 
 final class SpeechDirectorTests: XCTestCase {
 
+    // 문구를 문자열로 비교하므로 언어를 고정한다.
+    override func setUp() { L10n.setLanguage(.korean) }
+    override func tearDown() { L10n.setLanguage(.system) }
+
     private func makeDirector() -> SpeechDirector {
         SpeechDirector(lines: SpeechLibrary.lines, tuning: SpeechLibrary.tuning)
     }
@@ -56,7 +60,7 @@ final class SpeechDirectorTests: XCTestCase {
         tuning.globalCooldown = 0
         director.tuning = tuning
         // 후보를 하나로 줄여 재사용 금지를 확인한다.
-        director.lines = [SpeechLine(id: "only", text: "흠…", weight: 1)]
+        director.lines = [SpeechLine(id: "only", ko: "흠…", en: "Hmm…", weight: 1)]
         let random = FakeRandom([0.0])
 
         XCTAssertNil(director.evaluate(now: 200, idleSeconds: 200, hour: 14, random: random.next))
@@ -137,6 +141,9 @@ final class SpeechDirectorTests: XCTestCase {
 
 final class SpeechFrequencyTests: XCTestCase {
 
+    override func setUp() { L10n.setLanguage(.korean) }
+    override func tearDown() { L10n.setLanguage(.system) }
+
     func testFrequencyPresetsGetChattierInOrder() {
         let rare = SpeechFrequency.rare.tuning
         let normal = SpeechFrequency.normal.tuning
@@ -158,6 +165,22 @@ final class SpeechFrequencyTests: XCTestCase {
 
     func testRequestedChatLineExists() {
         XCTAssertTrue(SpeechLibrary.lines.contains { $0.text == "yup! happy to chat!" })
+    }
+
+    func testEveryLineHasBothLanguages() {
+        for line in SpeechLibrary.lines + SpeechLibrary.pokeLines {
+            XCTAssertFalse(line.korean.isEmpty, "\(line.id) 한국어 없음")
+            XCTAssertFalse(line.english.isEmpty, "\(line.id) 영어 없음")
+        }
+    }
+
+    func testLineFollowsTheLanguageSetting() {
+        let lunch = SpeechLibrary.lines.first { $0.id == "lunch" }!
+        L10n.setLanguage(.korean)
+        XCTAssertEqual(lunch.text, "오늘 점심은?")
+        L10n.setLanguage(.english)
+        XCTAssertEqual(lunch.text, "What's for lunch?")
+        L10n.setLanguage(.korean)
     }
 
     func testPokeRepliesHaveCooldownAndDoNotRepeat() {

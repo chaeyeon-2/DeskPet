@@ -25,10 +25,10 @@ public enum Outfit: String, CaseIterable, Sendable, Hashable {
 
     public var title: String {
         switch self {
-        case .checkShirt: return "파란 체크 셔츠"
-        case .orangePuffer: return "주황 패딩"
-        case .kixlabTee: return "I ♥ KIXLAB 티셔츠"
-        case .lgUniform: return "LG 트윈스 유니폼"
+        case .checkShirt: return L10n.t("파란 체크 셔츠", "Blue Check Shirt")
+        case .orangePuffer: return L10n.t("주황 패딩", "Orange Puffer")
+        case .kixlabTee: return L10n.t("I ♥ KIXLAB 티셔츠", "I ♥ KIXLAB Tee")
+        case .lgUniform: return L10n.t("LG 트윈스 유니폼", "LG Twins Jersey")
         }
     }
 }

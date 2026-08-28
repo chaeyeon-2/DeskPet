@@ -174,6 +174,20 @@ final class SelfTest: NSObject {
         controller.testStopAnimationTimer()
         check("캐릭터 보이기", controller.testWindow.isVisible)
 
+        // 언어 전환
+        for language in AppLanguage.allCases {
+            L10n.setLanguage(language)
+            let titles = Outfit.allCases.map(\.title) + PetSize.allCases.map(\.title)
+            check("언어 \(language.rawValue) 적용", titles.allSatisfy { !$0.isEmpty })
+        }
+        L10n.setLanguage(.english)
+        let englishOK = Outfit.orangePuffer.title == "Orange Puffer" && PetSize.small.title == "Small"
+        check("영어 UI 문자열", englishOK, "옷=\(Outfit.orangePuffer.title), 크기=\(PetSize.small.title)")
+        L10n.setLanguage(.korean)
+        let koreanOK = Outfit.orangePuffer.title == "주황 패딩" && PetSize.small.title == "작게"
+        check("한국어 UI 문자열", koreanOK)
+        L10n.setLanguage(.system)
+
         for outfit in Outfit.allCases {
             controller.model.outfit = outfit
             controller.model.tick(now: base + 30, headCenter: controller.testHeadCenter, cursor: .zero)

@@ -6,19 +6,26 @@ import Foundation
 
 public struct SpeechLine: Sendable, Equatable, Identifiable {
     public let id: String
-    public let text: String
+    /// 한국어 문구
+    public let korean: String
+    /// 영어 문구
+    public let english: String
     /// 뽑힐 가중치. 클수록 자주, 작을수록 드물게 나온다.
     public let weight: Double
     /// 이 시각(0...23)에만 나오는 문구. nil 이면 하루 종일 나온다.
     /// 예) 점심 문구는 [11, 12, 13]
     public let hours: [Int]?
 
-    public init(id: String, text: String, weight: Double = 1, hours: [Int]? = nil) {
+    public init(id: String, ko: String, en: String, weight: Double = 1, hours: [Int]? = nil) {
         self.id = id
-        self.text = text
+        self.korean = ko
+        self.english = en
         self.weight = weight
         self.hours = hours
     }
+
+    /// 지금 언어 설정에 맞는 문구.
+    public var text: String { L10n.t(korean, english) }
 
     /// 지금 시각에 나올 수 있는 문구인지.
     public func isAllowed(hour: Int) -> Bool {
@@ -58,9 +65,9 @@ public enum SpeechFrequency: String, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .rare: return "드물게"
-        case .normal: return "보통"
-        case .often: return "자주"
+        case .rare: return L10n.t("드물게", "Rare")
+        case .normal: return L10n.t("보통", "Normal")
+        case .often: return L10n.t("자주", "Often")
         }
     }
 
@@ -92,23 +99,24 @@ public enum SpeechFrequency: String, CaseIterable, Sendable {
 
 public enum SpeechLibrary {
     /// 말풍선 후보 문구. 여기만 고치면 앱 전체에 반영된다.
+    /// (`ko` / `en` 을 함께 적어 두면 언어 설정에 따라 알아서 골라 쓴다)
     public static let lines: [SpeechLine] = [
-        SpeechLine(id: "hmm",        text: "흠…",                weight: 3),
-        SpeechLine(id: "focusing",   text: "집중 중?",            weight: 3),
-        SpeechLine(id: "glasses",    text: "안경에 다 비치는데…",   weight: 2),
-        SpeechLine(id: "rest",       text: "잠깐 쉬어도 돼",       weight: 3),
-        SpeechLine(id: "pretend",    text: "나도 일하는 척하는 중", weight: 2),
-        SpeechLine(id: "quiet",      text: "키보드 조용한데?",     weight: 3),
-        SpeechLine(id: "coffee",     text: "커피 마실래?",         weight: 2),
-        SpeechLine(id: "tough",      text: "오늘도 쉽지 않네",      weight: 2),
-        SpeechLine(id: "chat",       text: "yup! happy to chat!", weight: 2),
-        SpeechLine(id: "focus",      text: "집중해!",             weight: 2),
-        SpeechLine(id: "distracted", text: "딴짓하니?",           weight: 0.4),   // 가장 드물게
+        SpeechLine(id: "hmm",        ko: "흠…",                en: "Hmm…",                        weight: 3),
+        SpeechLine(id: "focusing",   ko: "집중 중?",            en: "In the zone?",                weight: 3),
+        SpeechLine(id: "glasses",    ko: "안경에 다 비치는데…",   en: "It's all in my glasses…",     weight: 2),
+        SpeechLine(id: "rest",       ko: "잠깐 쉬어도 돼",       en: "A short break is fine",       weight: 3),
+        SpeechLine(id: "pretend",    ko: "나도 일하는 척하는 중", en: "I'm pretending to work too",  weight: 2),
+        SpeechLine(id: "quiet",      ko: "키보드 조용한데?",     en: "Keyboard's quiet…",           weight: 3),
+        SpeechLine(id: "coffee",     ko: "커피 마실래?",         en: "Coffee?",                     weight: 2),
+        SpeechLine(id: "tough",      ko: "오늘도 쉽지 않네",      en: "Rough one today, huh",        weight: 2),
+        SpeechLine(id: "chat",       ko: "yup! happy to chat!", en: "yup! happy to chat!",         weight: 2),
+        SpeechLine(id: "focus",      ko: "집중해!",             en: "Focus!",                      weight: 2),
+        SpeechLine(id: "distracted", ko: "딴짓하니?",           en: "Slacking off?",               weight: 0.4),   // 가장 드물게
 
         // 시간대에 맞춰 나오는 문구
-        SpeechLine(id: "lunch",      text: "오늘 점심은?",         weight: 4, hours: lunchHours),
-        SpeechLine(id: "dinner",     text: "오늘 저녁은?",         weight: 4, hours: dinnerHours),
-        SpeechLine(id: "lateNight",  text: "아직도 안 자?",        weight: 3, hours: lateNightHours)
+        SpeechLine(id: "lunch",      ko: "오늘 점심은?",         en: "What's for lunch?",  weight: 4, hours: lunchHours),
+        SpeechLine(id: "dinner",     ko: "오늘 저녁은?",         en: "What's for dinner?", weight: 4, hours: dinnerHours),
+        SpeechLine(id: "lateNight",  ko: "아직도 안 자?",        en: "Still up?",          weight: 3, hours: lateNightHours)
     ]
 
     /// 시간대 정의 — 여기만 고치면 문구가 나오는 시간이 바뀐다.
@@ -120,13 +128,13 @@ public enum SpeechLibrary {
 
     /// 캐릭터를 클릭했을 때 가끔 튀어나오는 짧은 대꾸.
     public static let pokeLines: [SpeechLine] = [
-        SpeechLine(id: "poke.why",    text: "왜?",            weight: 3),
-        SpeechLine(id: "poke.hi",     text: "yup! happy to chat!", weight: 2),
-        SpeechLine(id: "poke.itchy",  text: "간지러워",        weight: 2),
-        SpeechLine(id: "poke.oh",     text: "앗",              weight: 3),
-        SpeechLine(id: "poke.busy",   text: "집중 중인데…",     weight: 2),
-        SpeechLine(id: "poke.again",  text: "또?",             weight: 2),
-        SpeechLine(id: "poke.stop",   text: "그만 눌러…",       weight: 1)
+        SpeechLine(id: "poke.why",   ko: "왜?",                 en: "What?",              weight: 3),
+        SpeechLine(id: "poke.hi",    ko: "yup! happy to chat!", en: "yup! happy to chat!", weight: 2),
+        SpeechLine(id: "poke.itchy", ko: "간지러워",             en: "That tickles",       weight: 2),
+        SpeechLine(id: "poke.oh",    ko: "앗",                  en: "Ah!",                weight: 3),
+        SpeechLine(id: "poke.busy",  ko: "집중 중인데…",          en: "I was focusing…",    weight: 2),
+        SpeechLine(id: "poke.again", ko: "또?",                 en: "Again?",             weight: 2),
+        SpeechLine(id: "poke.stop",  ko: "그만 눌러…",           en: "Quit poking…",       weight: 1)
     ]
 
     /// 클릭 대꾸가 연달아 나오지 않게 하는 최소 간격(초)과 표시 시간.

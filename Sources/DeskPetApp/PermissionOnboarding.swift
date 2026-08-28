@@ -1,4 +1,5 @@
 import AppKit
+import DeskPetCore
 
 /// 권한 안내를 쉬운 한국어로 보여 준다. 거부해도 앱은 그대로 동작한다.
 enum PermissionOnboarding {
@@ -18,8 +19,9 @@ enum PermissionOnboarding {
 
     static func requestAccess(keyMonitor: KeyActivityMonitor, isFirstRun: Bool = false) {
         let alert = NSAlert()
-        alert.messageText = "타이핑을 따라 하려면 권한이 하나 필요해요"
-        alert.informativeText = """
+        alert.messageText = L10n.t("타이핑을 따라 하려면 권한이 하나 필요해요",
+                                   "One permission is needed to type along")
+        alert.informativeText = L10n.t("""
         캐릭터가 여러분이 타자를 칠 때 같이 키보드를 두드리게 하려면
         macOS 의 손쉬운 사용(입력 감지) 권한이 필요합니다.
 
@@ -28,9 +30,18 @@ enum PermissionOnboarding {
         • 인터넷으로 아무것도 보내지 않습니다.
 
         권한을 주지 않아도 캐릭터는 계속 잘 지냅니다. (대기 동작만 해요)
-        """
-        alert.addButton(withTitle: "시스템 설정 열기")
-        alert.addButton(withTitle: isFirstRun ? "나중에 할게요" : "닫기")
+        """, """
+        To make the character type along with you, DeskPet needs
+        macOS Accessibility (input monitoring) permission.
+
+        • The app only uses "a key was pressed" and "when it happened".
+        • It never reads or stores which key, your passwords, or which app you use.
+        • It sends nothing over the internet.
+
+        Without the permission the character still works fine — it just idles.
+        """)
+        alert.addButton(withTitle: L10n.t("시스템 설정 열기", "Open System Settings"))
+        alert.addButton(withTitle: isFirstRun ? L10n.t("나중에 할게요", "Later") : L10n.t("닫기", "Close"))
         alert.alertStyle = .informational
 
         NSApp.activate(ignoringOtherApps: true)
@@ -44,7 +55,7 @@ enum PermissionOnboarding {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: "확인")
+        alert.addButton(withTitle: L10n.t("확인", "OK"))
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
     }

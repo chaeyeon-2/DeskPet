@@ -7,34 +7,34 @@ on:
 
 jobs:
   build-and-test:
-    name: 빌드 & 테스트
-    # Package.swift 가 swift-tools-version 6.0 이라 Swift 6 이 있는 러너가 필요합니다.
-    # (macos-14 러너는 Swift 5.10 이라 빌드되지 않습니다)
+    name: Build & test
+    # Package.swift declares swift-tools-version 6.0, so the runner needs Swift 6.
+    # (the macos-14 runner ships Swift 5.10 and cannot build this package)
     runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Swift 버전 확인
+      - name: Swift version
         run: |
           swift --version
           xcodebuild -version
 
-      - name: 빌드
+      - name: Build
         run: swift build -v
 
-      - name: 단위 테스트
+      - name: Unit tests
         run: swift run DeskPetTests
 
-      - name: .app 번들 만들기 (서명 검증 포함)
+      - name: Build .app bundle (includes signature verification)
         run: ./Scripts/build_app.sh
 
-      - name: 스프라이트 내보내기 확인
+      - name: Sprite export smoke test
         run: |
           ./build/DeskPet.app/Contents/MacOS/DeskPet --export-sprites ./sprite-check --scale 4
           ls ./sprite-check
 
-      - name: 스프라이트 아티팩트 업로드
+      - name: Upload sprite artifact
         uses: actions/upload-artifact@v4
         with:
           name: sprites

@@ -12,10 +12,10 @@ if let index = arguments.firstIndex(of: "--export-sprites") {
     let directory = URL(fileURLWithPath: path)
     do {
         let files = try SpriteExport.exportAll(to: directory, scale: scaleArg ?? 4)
-        print("\(files.count)개 파일을 저장했습니다: \(directory.path)")
+        print(L10n.t("\(files.count)개 파일을 저장했습니다: ", "Wrote \(files.count) files to ") + directory.path)
         exit(0)
     } catch {
-        FileHandle.standardError.write(Data("스프라이트를 저장하지 못했습니다: \(error)\n".utf8))
+        FileHandle.standardError.write(Data((L10n.t("스프라이트를 저장하지 못했습니다: ", "Sprite export failed: ") + "\(error)\n").utf8))
         exit(1)
     }
 }
@@ -25,10 +25,10 @@ if let index = arguments.firstIndex(of: "--export-iconset") {
     let path = index + 1 < arguments.count ? arguments[index + 1] : "./DeskPet.iconset"
     do {
         let files = try AppIcon.exportIconSet(to: URL(fileURLWithPath: path))
-        print("아이콘 \(files.count)개를 만들었습니다: \(path)")
+        print(L10n.t("아이콘 \(files.count)개를 만들었습니다: ", "Wrote \(files.count) icon files to ") + path)
         exit(0)
     } catch {
-        FileHandle.standardError.write(Data("아이콘 생성 실패: \(error)\n".utf8))
+        FileHandle.standardError.write(Data((L10n.t("아이콘 생성 실패: ", "Icon export failed: ") + "\(error)\n").utf8))
         exit(1)
     }
 }

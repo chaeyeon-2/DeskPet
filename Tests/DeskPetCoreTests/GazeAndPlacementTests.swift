@@ -92,3 +92,44 @@ final class ScreenPlacementTests: XCTestCase {
         XCTAssertEqual(ScreenPlacement.clamp(frame: frame, into: []), frame)
     }
 }
+
+final class LocalizationTests: XCTestCase {
+
+    override func tearDown() { L10n.setLanguage(.system) }
+
+    func testLanguageSwitchingChangesUserFacingText() {
+        L10n.setLanguage(.korean)
+        XCTAssertEqual(L10n.t("크기", "Size"), "크기")
+        XCTAssertEqual(PetSize.small.title, "작게")
+        XCTAssertEqual(Outfit.orangePuffer.title, "주황 패딩")
+        XCTAssertEqual(SpeechFrequency.often.title, "자주")
+
+        L10n.setLanguage(.english)
+        XCTAssertEqual(L10n.t("크기", "Size"), "Size")
+        XCTAssertEqual(PetSize.small.title, "Small")
+        XCTAssertEqual(Outfit.orangePuffer.title, "Orange Puffer")
+        XCTAssertEqual(SpeechFrequency.often.title, "Often")
+    }
+
+    func testSystemSettingFollowsTheDeviceLanguage() {
+        L10n.setLanguage(.system)
+        XCTAssertEqual(L10n.isKorean, L10n.systemPrefersKorean)
+    }
+
+    func testEveryOutfitAndSizeHasBothLanguages() {
+        for language in [AppLanguage.korean, .english] {
+            L10n.setLanguage(language)
+            for outfit in Outfit.allCases { XCTAssertFalse(outfit.title.isEmpty) }
+            for size in PetSize.allCases { XCTAssertFalse(size.title.isEmpty) }
+            for frequency in SpeechFrequency.allCases { XCTAssertFalse(frequency.title.isEmpty) }
+        }
+    }
+
+    func testKoreanAndEnglishTitlesDiffer() {
+        L10n.setLanguage(.korean)
+        let korean = Outfit.allCases.map(\.title)
+        L10n.setLanguage(.english)
+        let english = Outfit.allCases.map(\.title)
+        XCTAssertNotEqual(korean, english)
+    }
+}

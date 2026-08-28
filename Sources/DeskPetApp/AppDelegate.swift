@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Dock 아이콘 없이 메뉴 막대에서만 동작한다.
         NSApp.setActivationPolicy(.accessory)
+        L10n.setLanguage(prefs.language)
 
         sound.isEnabled = prefs.soundEnabled
         windowController = PetWindowController(prefs: prefs, sound: sound)
@@ -28,7 +29,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         keyMonitor.onPermissionChange = { [weak self] trusted in
             guard let self else { return }
             self.menuBar.refresh()
-            if trusted { self.windowController.model.showHint("이제 같이 칠 수 있다!", seconds: 4) }
+            if trusted {
+                self.windowController.model.showHint(
+                    L10n.t("이제 같이 칠 수 있다!", "Now we can type together!"), seconds: 4)
+            }
         }
         keyMonitor.start()
 
@@ -43,7 +47,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 권한이 없으면 캐릭터가 한 번 알려 준다(모달 대신 말풍선으로).
         DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
             guard let self, !self.keyMonitor.isTrusted else { return }
-            self.windowController.model.showHint("손쉬운 사용 켜 주면 같이 타자 칠게", seconds: 6)
+            self.windowController.model.showHint(
+                L10n.t("손쉬운 사용 켜 주면 같이 타자 칠게", "Turn on Accessibility and I'll type along"),
+                seconds: 6)
         }
     }
 

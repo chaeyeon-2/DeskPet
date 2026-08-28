@@ -13,6 +13,7 @@ final class Preferences {
         static let bubbleFrequency = "pet.bubbleFrequency"
         static let size = "pet.size"
         static let outfit = "pet.outfit"
+        static let language = "pet.language"
         static let originX = "pet.origin.x"
         static let originY = "pet.origin.y"
         static let hasPosition = "pet.origin.saved"
@@ -29,7 +30,8 @@ final class Preferences {
             Key.bubbles: true,
             Key.bubbleFrequency: SpeechFrequency.normal.rawValue,
             Key.size: PetSize.medium.rawValue,
-            Key.outfit: Outfit.checkShirt.rawValue
+            Key.outfit: Outfit.checkShirt.rawValue,
+            Key.language: AppLanguage.system.rawValue
         ])
     }
 
@@ -61,6 +63,11 @@ final class Preferences {
     var outfit: Outfit {
         get { Outfit(rawValue: defaults.string(forKey: Key.outfit) ?? "") ?? .checkShirt }
         set { defaults.set(newValue.rawValue, forKey: Key.outfit) }
+    }
+
+    var language: AppLanguage {
+        get { AppLanguage(rawValue: defaults.string(forKey: Key.language) ?? "") ?? .system }
+        set { defaults.set(newValue.rawValue, forKey: Key.language) }
     }
 
     var savedOrigin: CGPoint? {
