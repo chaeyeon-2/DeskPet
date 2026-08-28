@@ -8,13 +8,17 @@ on:
 jobs:
   build-and-test:
     name: 빌드 & 테스트
-    runs-on: macos-14
+    # Package.swift 가 swift-tools-version 6.0 이라 Swift 6 이 있는 러너가 필요합니다.
+    # (macos-14 러너는 Swift 5.10 이라 빌드되지 않습니다)
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Swift 버전 확인
-        run: swift --version
+        run: |
+          swift --version
+          xcodebuild -version
 
       - name: 빌드
         run: swift build -v
