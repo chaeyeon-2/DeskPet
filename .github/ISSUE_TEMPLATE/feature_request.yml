@@ -1,0 +1,29 @@
+name: 아이디어 / Feature request
+description: 새 옷, 새 동작, 새 문구 아이디어
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 어떤 종류인가요?
+      options:
+        - 새 옷
+        - 새 동작(애니메이션)
+        - 새 말풍선 문구
+        - 그 밖의 기능
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: 아이디어
+      placeholder: 예) 후드티를 입히고 싶어요. 모자 끈이 흔들리면 귀여울 것 같아요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: 참고 이미지 (선택)
+      description: 있으면 붙여 주세요. 단, 저작권이 있는 이미지는 링크만 남겨 주세요.

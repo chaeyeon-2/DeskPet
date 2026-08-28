@@ -1,0 +1,41 @@
+name: 버그 신고 / Bug report
+description: 동작이 이상하거나 앱이 죽어요
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 무슨 일이 있었나요?
+      placeholder: 예) 타이핑해도 캐릭터가 따라 치지 않아요
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 방법
+      placeholder: |
+        1. 앱을 실행하고
+        2. ...
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS 버전
+      placeholder: "예) 15.1 / Apple Silicon"
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnose
+    attributes:
+      label: 진단 결과 (타이핑 감지 문제라면)
+      description: |
+        아래를 터미널에 붙여넣고 20초간 키를 친 뒤 결과를 올려 주세요.
+        ```
+        /Applications/DeskPet.app/Contents/MacOS/DeskPet --diagnose /tmp/deskpet.txt
+        cat /tmp/deskpet.txt
+        ```
+      render: text

@@ -1,0 +1,25 @@
+# Swift Package Manager
+/.build/
+/Packages/
+*.xcodeproj
+.swiftpm/
+
+# 빌드 산출물
+/build/
+/dist/
+*.app
+*.dmg
+
+# 스프라이트/아이콘 내보내기 결과
+*.iconset/
+/Sprites/
+/selftest/
+
+# macOS
+.DS_Store
+
+# 참고용 사진은 저장소에 넣지 않습니다 (인물 사진 포함 금지)
+*.jpg
+*.jpeg
+*.heic
+!docs/*.png

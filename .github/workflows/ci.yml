@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: 빌드 & 테스트
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift 버전 확인
+        run: swift --version
+
+      - name: 빌드
+        run: swift build -v
+
+      - name: 단위 테스트
+        run: swift run DeskPetTests
+
+      - name: .app 번들 만들기 (서명 검증 포함)
+        run: ./Scripts/build_app.sh
+
+      - name: 스프라이트 내보내기 확인
+        run: |
+          ./build/DeskPet.app/Contents/MacOS/DeskPet --export-sprites ./sprite-check --scale 4
+          ls ./sprite-check
+
+      - name: 스프라이트 아티팩트 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprites
+          path: ./sprite-check/_all_states.png
+          if-no-files-found: error
