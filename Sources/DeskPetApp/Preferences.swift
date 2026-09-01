@@ -18,6 +18,11 @@ final class Preferences {
         static let originY = "pet.origin.y"
         static let hasPosition = "pet.origin.saved"
         static let permissionIntroShown = "pet.permissionIntroShown"
+        static let pomodoroMinutes = "pomodoro.minutes"
+        static let attentionGraceSeconds = "pomodoro.attentionGraceSeconds"
+        static let attentionWatchBrowser = "pomodoro.attentionWatchBrowser"
+        static let distractionApps = "pomodoro.distractionApps"
+        static let distractionSites = "pomodoro.distractionSites"
     }
 
     private let defaults: UserDefaults
@@ -31,7 +36,12 @@ final class Preferences {
             Key.bubbleFrequency: SpeechFrequency.normal.rawValue,
             Key.size: PetSize.medium.rawValue,
             Key.outfit: Outfit.checkShirt.rawValue,
-            Key.language: AppLanguage.system.rawValue
+            Key.language: AppLanguage.system.rawValue,
+            Key.pomodoroMinutes: 25.0,
+            Key.attentionGraceSeconds: 6.0,
+            Key.attentionWatchBrowser: true,
+            Key.distractionApps: ["com.kakao.KakaoTalkMac", "com.apple.MobileSMS", "com.hnc.Discord", "com.netflix.Netflix", "com.tencent.xin"],
+            Key.distractionSites: ["youtube.com", "youtu.be", "netflix.com", "twitch.tv", "instagram.com", "x.com", "twitter.com", "reddit.com", "tiktok.com", "dcinside.com", "fmkorea.com", "ruliweb.com", "clien.net", "inven.co.kr", "chzzk.naver.com"]
         ])
     }
 
@@ -90,5 +100,30 @@ final class Preferences {
     var permissionIntroShown: Bool {
         get { defaults.bool(forKey: Key.permissionIntroShown) }
         set { defaults.set(newValue, forKey: Key.permissionIntroShown) }
+    }
+
+    var pomodoroMinutes: Double {
+        get { max(1, defaults.double(forKey: Key.pomodoroMinutes)) }
+        set { defaults.set(max(1, newValue), forKey: Key.pomodoroMinutes) }
+    }
+
+    var attentionGraceSeconds: Double {
+        get { max(0, defaults.double(forKey: Key.attentionGraceSeconds)) }
+        set { defaults.set(max(0, newValue), forKey: Key.attentionGraceSeconds) }
+    }
+
+    var attentionWatchBrowser: Bool {
+        get { defaults.bool(forKey: Key.attentionWatchBrowser) }
+        set { defaults.set(newValue, forKey: Key.attentionWatchBrowser) }
+    }
+
+    var distractionApps: [String] {
+        get { defaults.stringArray(forKey: Key.distractionApps) ?? [] }
+        set { defaults.set(newValue, forKey: Key.distractionApps) }
+    }
+
+    var distractionSites: [String] {
+        get { defaults.stringArray(forKey: Key.distractionSites) ?? [] }
+        set { defaults.set(newValue, forKey: Key.distractionSites) }
     }
 }

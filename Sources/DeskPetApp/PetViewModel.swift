@@ -7,6 +7,9 @@ final class PetViewModel: ObservableObject {
 
     @Published private(set) var image: NSImage
     @Published private(set) var bubbleText: String?
+    @Published private(set) var focusTimeText: String?
+    @Published private(set) var focusIsPaused = false
+    @Published private(set) var attentionAlert = false
 
     let brain: PetBrain
     private var speech = SpeechDirector()
@@ -48,11 +51,14 @@ final class PetViewModel: ObservableObject {
         CGSize(width: max(spriteSize.width, 220), height: spriteSize.height + bubbleAreaHeight)
     }
 
-    init(size: PetSize, now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+    init(size: PetSize, outfit: Outfit = .checkShirt,
+         now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         self.size = size
+        self.outfit = outfit
         self.startedAt = now
         self.brain = PetBrain(now: now)
-        let pose = Pose()
+        var pose = Pose()
+        pose.outfit = outfit
         self.currentCanvas = CharacterSprite.render(pose)
         self.image = SpriteImageProvider.image(for: currentCanvas, size: size.spriteSize)
     }
@@ -118,6 +124,13 @@ final class PetViewModel: ObservableObject {
         guard bubblesEnabled else { return }
         bubbleText = text
         bubbleEndsAt = now + seconds
+    }
+
+    /// 집중 타이머가 화면에 표시할 상태. 타이머 로직은 별도 컨트롤러가 맡는다.
+    func setFocusState(isActive: Bool, isPaused: Bool, timeText: String, alerting: Bool) {
+        focusTimeText = isActive ? timeText : nil
+        focusIsPaused = isPaused
+        attentionAlert = alerting
     }
 
     /// 캐릭터 그림 위(불투명 픽셀)인지 검사한다. 창의 나머지 영역은 클릭이 통과한다.

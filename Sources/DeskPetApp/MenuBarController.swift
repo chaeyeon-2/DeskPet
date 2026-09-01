@@ -9,23 +9,29 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private let sound: SoundPlayer
     private let windowController: PetWindowController
     private let keyMonitor: KeyActivityMonitor
+    private let pomodoro: PomodoroController
 
     private let visibilityItem = NSMenuItem()
     private let soundItem = NSMenuItem()
     private let bubbleItem = NSMenuItem()
     private let loginItem = NSMenuItem()
     private let permissionItem = NSMenuItem()
+    private let focusItem = NSMenuItem()
+    private let focusStatusItem = NSMenuItem()
+    private let browserWatchingItem = NSMenuItem()
     private var sizeItems: [PetSize: NSMenuItem] = [:]
     private var frequencyItems: [SpeechFrequency: NSMenuItem] = [:]
     private var outfitItems: [Outfit: NSMenuItem] = [:]
     private var languageItems: [AppLanguage: NSMenuItem] = [:]
 
     init(prefs: Preferences, sound: SoundPlayer,
-         windowController: PetWindowController, keyMonitor: KeyActivityMonitor) {
+         windowController: PetWindowController, keyMonitor: KeyActivityMonitor,
+         pomodoro: PomodoroController) {
         self.prefs = prefs
         self.sound = sound
         self.windowController = windowController
         self.keyMonitor = keyMonitor
+        self.pomodoro = pomodoro
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
 
@@ -42,6 +48,36 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         visibilityItem.action = #selector(toggleVisible)
         visibilityItem.target = self
         menu.addItem(visibilityItem)
+
+        focusItem.action = #selector(toggleFocus)
+        focusItem.target = self
+        menu.addItem(focusItem)
+
+        focusStatusItem.isEnabled = false
+        menu.addItem(focusStatusItem)
+
+        let attentionMenu = NSMenu()
+        browserWatchingItem.title = L10n.t("브라우저 탭도 감지", "Watch browser tabs")
+        browserWatchingItem.action = #selector(toggleBrowserWatching)
+        browserWatchingItem.target = self
+        attentionMenu.addItem(browserWatchingItem)
+        attentionMenu.addItem(.separator())
+
+        let addApp = NSMenuItem(title: L10n.t("현재 앱을 딴짓 목록에 추가", "Add current app as a distraction"), action: #selector(addCurrentApp), keyEquivalent: "")
+        addApp.target = self
+        attentionMenu.addItem(addApp)
+        let addSite = NSMenuItem(title: L10n.t("현재 사이트를 딴짓 목록에 추가", "Add current site as a distraction"), action: #selector(addCurrentSite), keyEquivalent: "")
+        addSite.target = self
+        attentionMenu.addItem(addSite)
+        attentionMenu.addItem(.separator())
+        let resetList = NSMenuItem(title: L10n.t("딴짓 목록 비우기", "Clear distraction list"), action: #selector(clearDistractionList), keyEquivalent: "")
+        resetList.target = self
+        attentionMenu.addItem(resetList)
+        let attentionItem = NSMenuItem(title: L10n.t("집중 감지", "Attention Detection"), action: nil, keyEquivalent: "")
+        attentionItem.submenu = attentionMenu
+        menu.addItem(attentionItem)
+
+        menu.addItem(.separator())
 
         let sizeMenu = NSMenu()
         for size in PetSize.allCases {
@@ -133,6 +169,17 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             : L10n.t("캐릭터 보이기", "Show Character")
         soundItem.state = prefs.soundEnabled ? .on : .off
         bubbleItem.state = prefs.bubblesEnabled ? .on : .off
+        browserWatchingItem.state = prefs.attentionWatchBrowser ? .on : .off
+        switch pomodoro.phase {
+        case .idle, .finished:
+            focusItem.title = L10n.t("집중 시작 (\(Int(prefs.pomodoroMinutes))분)", "Start Focus (\(Int(prefs.pomodoroMinutes)) min)")
+        case .focusing:
+            focusItem.title = L10n.t("집중 일시정지", "Pause Focus")
+        case .paused:
+            focusItem.title = L10n.t("집중 다시 시작", "Resume Focus")
+        }
+        let warning = pomodoro.warningCount == 0 ? "" : L10n.t(" · 경고 \(pomodoro.warningCount)회", " · \(pomodoro.warningCount) warnings")
+        focusStatusItem.title = L10n.t("집중 타이머: \(pomodoro.timeText)\(warning)", "Focus timer: \(pomodoro.timeText)\(warning)")
         loginItem.state = LaunchAtLogin.isEnabled ? .on : .off
         loginItem.isEnabled = LaunchAtLogin.isSupported
         for (size, item) in sizeItems { item.state = (prefs.size == size) ? .on : .off }
@@ -151,12 +198,14 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             item.isEnabled = prefs.bubblesEnabled
         }
 
-        if keyMonitor.isTrusted {
+        if keyMonitor.isInputMonitoringTrusted && keyMonitor.isGlobalMonitorInstalled {
             permissionItem.title = keyMonitor.isSecureInputEnabled
                 ? L10n.t("입력 감지: 잠시 쉬는 중(보안 입력)", "Typing detection: paused (secure input)")
                 : L10n.t("입력 감지: 켜짐", "Typing detection: on")
+        } else if keyMonitor.isInputMonitoringTrusted {
+            permissionItem.title = L10n.t("입력 감지: 앱을 다시 실행해 주세요…", "Typing detection: relaunch required…")
         } else {
-            permissionItem.title = L10n.t("입력 감지 권한 허용하기…", "Grant typing access…")
+            permissionItem.title = L10n.t("입력 모니터링 권한 허용하기…", "Grant Input Monitoring access…")
         }
     }
 
@@ -166,6 +215,41 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let next = !windowController.isVisible
         windowController.setVisible(next)
         prefs.isVisible = next
+        refresh()
+    }
+
+    @objc private func toggleFocus() {
+        pomodoro.toggle()
+        refresh()
+    }
+
+    @objc private func toggleBrowserWatching() {
+        prefs.attentionWatchBrowser.toggle()
+        refresh()
+    }
+
+    @objc private func addCurrentApp() {
+        pomodoro.sampleCurrentContext()
+        let bundleID = pomodoro.currentAppName
+        let id = pomodoro.currentBundleID
+        guard !id.isEmpty, !prefs.distractionApps.contains(where: { $0.caseInsensitiveCompare(id) == .orderedSame }) else { return }
+        prefs.distractionApps.append(id)
+        windowController.model.showHint(L10n.t("\(bundleID)을 딴짓 목록에 추가했어.", "Added \(bundleID) to distractions."), seconds: 3)
+        refresh()
+    }
+
+    @objc private func addCurrentSite() {
+        pomodoro.sampleCurrentContext()
+        let host = pomodoro.currentHost
+        guard !host.isEmpty, !prefs.distractionSites.contains(where: { $0.caseInsensitiveCompare(host) == .orderedSame }) else { return }
+        prefs.distractionSites.append(host)
+        windowController.model.showHint(L10n.t("\(host)을 딴짓 목록에 추가했어.", "Added \(host) to distractions."), seconds: 3)
+        refresh()
+    }
+
+    @objc private func clearDistractionList() {
+        prefs.distractionApps = []
+        prefs.distractionSites = []
         refresh()
     }
 
@@ -222,11 +306,16 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func openPermission() {
-        if keyMonitor.isTrusted {
+        if keyMonitor.isInputMonitoringTrusted && keyMonitor.isGlobalMonitorInstalled {
             PermissionOnboarding.showMessage(
                 title: L10n.t("입력 감지가 켜져 있어요", "Typing detection is on"),
                 message: L10n.t("타이핑하면 캐릭터도 같이 키보드를 두드려요.\n입력한 내용은 저장하지도, 어디로 보내지도 않아요.",
                                 "The character types along when you do.\nWhat you type is never stored or sent anywhere."))
+        } else if keyMonitor.isInputMonitoringTrusted {
+            PermissionOnboarding.showMessage(
+                title: L10n.t("DeskPet을 다시 실행해 주세요", "Please relaunch DeskPet"),
+                message: L10n.t("입력 모니터링 권한을 반영하려면 DeskPet을 완전히 종료한 뒤 다시 실행해야 해요.",
+                                "Quit DeskPet completely and reopen it to apply Input Monitoring access."))
         } else {
             PermissionOnboarding.requestAccess(keyMonitor: keyMonitor)
         }
