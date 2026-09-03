@@ -25,22 +25,24 @@ final class Diagnose: NSObject {
         log("실행 경로: \(Bundle.main.bundlePath)")
         log("번들 ID: \(Bundle.main.bundleIdentifier ?? "(없음)")")
         log("손쉬운 사용(AXIsProcessTrusted): \(monitor.isTrusted)")
+        log("입력 모니터링(CGPreflightListenEventAccess): \(monitor.isInputMonitoringTrusted)")
         log("보안 입력(Secure Input): \(monitor.isSecureInputEnabled)")
         log("─────── 지금부터 \(seconds)초간 키 입력을 셉니다 ───────")
 
         monitor.onKeystroke = { [weak self] in self?.keyCount += 1 }
         monitor.start()
+        log("전역 키 이벤트 탭 설치: \(monitor.isGlobalMonitorInstalled)")
 
         let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] t in
             guard let self else { return }
             self.elapsed += 1
-            self.log("\(self.elapsed)초: 감지된 키 입력 누적 \(self.keyCount)회 (권한=\(self.monitor.isTrusted))")
+            self.log("\(self.elapsed)초: 감지된 키 입력 누적 \(self.keyCount)회 (입력 모니터링=\(self.monitor.isInputMonitoringTrusted), 이벤트 탭=\(self.monitor.isGlobalMonitorInstalled))")
             if self.elapsed >= seconds {
                 t.invalidate()
                 self.log("─────── 결과 ───────")
                 self.log(self.keyCount > 0
                          ? "정상: 키 입력이 앱까지 도달합니다 (\(self.keyCount)회)"
-                         : "문제: 키 입력이 전혀 도달하지 않습니다. 손쉬운 사용 권한을 확인하세요.")
+                         : "문제: 키 입력이 전혀 도달하지 않습니다. 입력 모니터링 권한과 앱 재실행을 확인하세요.")
                 exit(0)
             }
         }

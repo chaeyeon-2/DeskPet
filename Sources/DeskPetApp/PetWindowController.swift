@@ -26,7 +26,9 @@ final class PetWindowController {
     init(prefs: Preferences, sound: SoundPlayer) {
         self.prefs = prefs
         self.sound = sound
-        self.model = PetViewModel(size: prefs.size)
+        // SwiftUI 호스팅 뷰를 만들기 전부터 저장된 옷을 적용해, 기본 옷이 잠깐
+        // 보였다가 바뀌는 첫 프레임 깜빡임을 없앤다.
+        self.model = PetViewModel(size: prefs.size, outfit: prefs.outfit)
         self.panel = PetPanel(size: model.windowSize)
         self.hostingView = NSHostingView(rootView: PetView(model: model))
 
@@ -149,8 +151,9 @@ final class PetWindowController {
 
     private func startTimer() {
         guard timer == nil else { return }
-        let t = Timer(timeInterval: 1.0 / 20.0, repeats: true) { [weak self] _ in self?.tick() }
-        t.tolerance = 0.01
+        // 픽셀 프레임 전환이 답답하게 느껴지지 않도록 30fps로 갱신한다.
+        let t = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in self?.tick() }
+        t.tolerance = 0.005
         RunLoop.main.add(t, forMode: .common)
         timer = t
     }

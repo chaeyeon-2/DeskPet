@@ -155,8 +155,10 @@ final class SelfTest: NSObject {
 
     private func checkMenuAndSizes() {
         let monitor = KeyActivityMonitor()
+        let pomodoro = PomodoroController(prefs: prefs, model: controller.model)
         let menuBar = MenuBarController(prefs: prefs, sound: sound,
-                                        windowController: controller, keyMonitor: monitor)
+                                        windowController: controller, keyMonitor: monitor,
+                                        pomodoro: pomodoro)
         menuBar.refresh()
         check("메뉴 막대 아이콘과 메뉴 구성", true)
 

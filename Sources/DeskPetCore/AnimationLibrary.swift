@@ -64,14 +64,14 @@ public enum AnimationLibrary {
         return p
     }
 
-    /// 천천히 숨 쉬기.
+    /// 편안하지만 처지지 않게 숨 쉬기.
     static func idle() -> SpriteAnimation {
         var a = base(); a.headOffsetY = 0; a.bodyOffsetY = 0
         var b = base(); b.headOffsetY = 1; b.bodyOffsetY = 1
         var c = base(); c.headOffsetY = 1; c.bodyOffsetY = 0
         return SpriteAnimation(frames: [
-            AnimationFrame(a, 1.1), AnimationFrame(b, 0.9),
-            AnimationFrame(c, 0.5), AnimationFrame(a, 0.9)
+            AnimationFrame(a, 0.7), AnimationFrame(b, 0.55),
+            AnimationFrame(c, 0.3), AnimationFrame(a, 0.65)
         ], loops: true)
     }
 
